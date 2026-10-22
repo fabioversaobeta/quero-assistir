@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Build a partir da RAIZ do monorepo: docker build -f apps/api/Dockerfile .
-FROM node:22-slim AS base
+FROM node:25-slim AS base
 RUN apt-get update -y && apt-get install -y --no-install-recommends openssl ca-certificates \
   && rm -rf /var/lib/apt/lists/* \
   && npm install -g pnpm@11.17.0
