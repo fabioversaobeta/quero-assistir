@@ -11,5 +11,5 @@
     "test": "echo \"(sem testes)\"",
     "build": "tsc --noEmit"
   },
-  "devDependencies": { "typescript": "^5.9.2" }
+  "devDependencies": { "typescript": "^7.0.2" }
 }
