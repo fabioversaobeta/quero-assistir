@@ -9,7 +9,7 @@ FROM base AS build
 ARG NEXT_PUBLIC_GOOGLE_CLIENT_ID=""
 ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID
 ENV NEXT_TELEMETRY_DISABLED=1
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages/contracts/package.json packages/contracts/
 COPY apps/admin/package.json apps/admin/
 RUN pnpm install --frozen-lockfile --filter @quero-assistir/admin...

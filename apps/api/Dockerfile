@@ -7,7 +7,7 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends openssl ca-c
 WORKDIR /repo
 
 FROM base AS build
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages/contracts/package.json packages/contracts/
 COPY apps/api/package.json apps/api/
 RUN pnpm install --frozen-lockfile --filter @quero-assistir/api...
