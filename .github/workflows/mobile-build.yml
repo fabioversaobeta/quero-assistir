@@ -1,0 +1,35 @@
+name: Mobile build (EAS)
+
+# Manual: gera binários Android/iOS na nuvem da Expo. Requer o secret EXPO_TOKEN.
+# Publicação nas lojas fica para depois (ver docs/09-publicacao-lojas.md).
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Plataforma
+        type: choice
+        options: [android, ios, all]
+        default: android
+      profile:
+        description: Perfil do eas.json
+        type: choice
+        options: [development, preview, production]
+        default: preview
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - run: eas build --platform ${{ inputs.platform }} --profile ${{ inputs.profile }} --non-interactive --no-wait
+        working-directory: apps/mobile

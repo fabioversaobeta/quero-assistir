@@ -1,0 +1,49 @@
+# Desenvolvimento local. `docker compose up -d postgres` sobe só o banco;
+# `docker compose --profile full up --build` sobe banco + API + admin.
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: quero
+      POSTGRES_PASSWORD: quero
+      POSTGRES_DB: quero_assistir
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quero -d quero_assistir"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    profiles: ["full"]
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    env_file: apps/api/.env
+    environment:
+      DATABASE_URL: postgresql://quero:quero@postgres:5432/quero_assistir
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+
+  admin:
+    profiles: ["full"]
+    build:
+      context: .
+      dockerfile: apps/admin/Dockerfile
+      args:
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-}
+    environment:
+      API_URL: http://api:3000
+    depends_on:
+      - api
+    ports:
+      - "3001:3000"
+
+volumes:
+  pgdata:

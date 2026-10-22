@@ -1,0 +1,21 @@
+{
+  "name": "quero-assistir",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@11.17.0",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "dev:api": "pnpm --filter @quero-assistir/api start:dev",
+    "dev:admin": "pnpm --filter @quero-assistir/admin dev",
+    "dev:mobile": "pnpm --filter @quero-assistir/mobile start",
+    "db:up": "docker compose up -d postgres",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2"
+  }
+}

@@ -1,0 +1,36 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+allowBuilds:
+  "@nestjs/core": true
+  "@parcel/watcher": true
+  "@prisma/client": true
+  "@prisma/engines": true
+  "@scarf/scarf": true
+  prisma: true
+  esbuild: true
+  sharp: true
+  unrs-resolver: true
+minimumReleaseAgeExclude:
+  - '@expo/cli@58.1.14'
+  - '@expo/config-plugins@58.0.10'
+  - '@expo/config@58.0.7'
+  - '@expo/env@2.5.3'
+  - '@expo/fingerprint@0.21.6'
+  - '@expo/inline-modules@0.2.7'
+  - '@expo/local-build-cache-provider@58.0.7'
+  - '@expo/log-box@58.0.13'
+  - '@expo/metro-config@58.0.16'
+  - '@expo/prebuild-config@58.0.15'
+  - '@expo/router-server@58.0.16'
+  - babel-preset-expo@58.0.19
+  - expo-asset@58.0.18
+  - expo-constants@58.0.13
+  - expo-modules-autolinking@58.0.14
+  - expo-modules-core@58.0.24
+  - expo-modules-jsi@58.0.17
+  - expo@58.0.17
+  - '@expo/metro-runtime@58.0.15'
+  - expo-linking@58.0.14
+  - expo-router@58.0.25
+  - expo-status-bar@58.0.4

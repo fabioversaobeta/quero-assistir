@@ -1,0 +1,162 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TitleKind {
+  MOVIE
+  SERIES
+}
+
+enum AvailabilityType {
+  CINEMA
+  FLATRATE
+  RENT
+  BUY
+}
+
+enum SwipeDecision {
+  LIKE
+  DISLIKE
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum SyncStatus {
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
+enum SyncTrigger {
+  SCHEDULE
+  MANUAL
+}
+
+/// Filme ou série do catálogo, espelhado do TMDB. O app só exibe o que existe aqui.
+model Title {
+  id               Int       @id @default(autoincrement())
+  tmdbId           Int
+  kind             TitleKind
+  title            String
+  originalTitle    String
+  overview         String    @default("")
+  posterPath       String?
+  backdropPath     String?
+  releaseDate      DateTime? @db.Date
+  runtimeMinutes   Int?
+  originalLanguage String?
+  originCountries  String[]
+  isAnime          Boolean   @default(false)
+  voteAverage      Float     @default(0)
+  voteCount        Int       @default(0)
+  popularity       Float     @default(0)
+  /// Classificação indicativa brasileira: L, 10, 12, 14, 16, 18.
+  certification    String?
+  minAge           Int?
+  /// Moderação manual pelo painel admin.
+  hidden           Boolean   @default(false)
+  featured         Boolean   @default(false)
+  syncedAt         DateTime
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  genres         TitleGenre[]
+  availabilities Availability[]
+  swipes         Swipe[]
+
+  @@unique([tmdbId, kind])
+  @@index([hidden, popularity(sort: Desc), id(sort: Desc)])
+}
+
+model Genre {
+  /// Mesmo id do TMDB.
+  id     Int          @id
+  name   String
+  titles TitleGenre[]
+}
+
+model TitleGenre {
+  titleId Int
+  genreId Int
+  title   Title @relation(fields: [titleId], references: [id], onDelete: Cascade)
+  genre   Genre @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@id([titleId, genreId])
+}
+
+/// Plataforma de streaming (Netflix, Prime Video...). `enabled` controla se entra na sincronização.
+model Provider {
+  /// Mesmo id do TMDB/JustWatch.
+  id              Int            @id
+  name            String
+  logoPath        String?
+  enabled         Boolean        @default(false)
+  displayPriority Int            @default(0)
+  availabilities  Availability[]
+}
+
+/// Onde assistir: em cartaz ou em uma plataforma, por região. Substituída por completo a cada sync do título.
+model Availability {
+  id         Int              @id @default(autoincrement())
+  titleId    Int
+  providerId Int?
+  region     String           @db.Char(2)
+  type       AvailabilityType
+  lastSeenAt DateTime
+
+  title    Title     @relation(fields: [titleId], references: [id], onDelete: Cascade)
+  provider Provider? @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([region, type, providerId])
+  @@index([titleId])
+}
+
+model User {
+  id          String   @id @default(uuid())
+  googleSub   String   @unique
+  email       String   @unique
+  name        String?
+  pictureUrl  String?
+  role        UserRole @default(USER)
+  createdAt   DateTime @default(now())
+  lastLoginAt DateTime @default(now())
+
+  swipes Swipe[]
+}
+
+/// Decisão do usuário sobre um título. LIKE = lista "quero assistir".
+model Swipe {
+  userId    String
+  titleId   Int
+  decision  SwipeDecision
+  watched   Boolean       @default(false)
+  decidedAt DateTime      @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title Title @relation(fields: [titleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, titleId])
+  @@index([titleId, decision])
+  @@index([decidedAt])
+}
+
+model SyncRun {
+  id         Int         @id @default(autoincrement())
+  scope      String
+  trigger    SyncTrigger
+  status     SyncStatus  @default(RUNNING)
+  startedAt  DateTime    @default(now())
+  finishedAt DateTime?
+  stats      Json?
+  error      String?
+
+  @@index([startedAt(sort: Desc)])
+}
