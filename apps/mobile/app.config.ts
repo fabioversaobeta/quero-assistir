@@ -13,6 +13,7 @@ const config: ExpoConfig = {
   plugins: [
     'expo-router',
     'expo-secure-store',
+    'expo-image',
     [
       '@react-native-google-signin/google-signin',
       // Formato: com.googleusercontent.apps.<ID_DO_CLIENT_IOS>
