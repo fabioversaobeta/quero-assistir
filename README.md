@@ -1,60 +1,94 @@
 # 🎬 Quero Assistir
 
-App (Android e iOS) para descobrir filmes, séries e animes com **swipe estilo Tinder**: arraste para a direita o que você quer assistir, para a esquerda o que não interessa. Começa pelo que está **em cartaz nos cinemas** e, quando acabar, oferece o catálogo das **plataformas de streaming**.
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![NestJS](https://img.shields.io/badge/NestJS-E0234E?logo=nestjs&logoColor=white)
+![Expo](https://img.shields.io/badge/Expo-000020?logo=expo&logoColor=white)
 
-- **Anônimo ou com Google:** sem login, tudo fica só no aparelho. Entrando com Google, a lista vai para a nuvem (e o histórico anônimo é migrado).
-- **Catálogo próprio:** o app só mostra títulos que já estão na nossa base, atualizada por uma rotina diária a partir do [TMDB](https://www.themoviedb.org).
-- **Painel admin:** métricas, moderação do catálogo, plataformas e sincronização manual.
+**Swipe-based app to decide what to watch.** Swipe right on the movies, series and anime you want to see, left on the ones you don't. It starts with what's **in theaters now** and, once you run out, offers the **streaming platform** catalog.
 
-## Estrutura
+<!-- TODO: add screenshots or a GIF of the swipe deck, e.g.
+<p align="center"><img src="docs/images/deck.gif" width="280" /></p> -->
+
+## Features
+
+**Mobile app (Android and iOS)**
+- Tinder-style swipe deck with ✕ / ♥ buttons and **undo** for the last card
+- Title cards with poster, age rating (Brazilian ratings), year, genres, where to watch and synopsis
+- "In theaters" first, then streaming, filterable by category (all / movies / series / anime) and platform
+- "My list": liked titles, mark as watched, remove
+- **Anonymous or Google sign-in**: no login means everything stays on the device; signing in syncs the list to the cloud and **migrates the anonymous history**
+- Account deletion that erases all user data (App Store, Google Play and LGPD requirement)
+
+**Admin panel**
+- Overview metrics (titles, users, swipes, "want to watch" rate, most wanted, last sync)
+- Catalog moderation (search, hide, feature), platform toggles, manual sync with history
+
+**Automation**
+- Daily sync with [TMDB](https://www.themoviedb.org) (05:00 America/Sao_Paulo by default): new theatrical releases, titles leaving theaters, enabled-platform catalogs, orphan cleanup
+- The app only shows titles already in our own database; it never calls TMDB directly
+
+## Architecture
+
+pnpm monorepo:
 
 ```
 apps/
-  api/      NestJS + Prisma + PostgreSQL  → API, sincronização diária (Railway)
-  admin/    Next.js                        → painel do administrador (Vercel)
-  mobile/   Expo / React Native            → app Android + iOS
+  api/        NestJS + Prisma + PostgreSQL  → REST API + daily sync (Railway)
+  admin/      Next.js                       → admin panel (Vercel)
+  mobile/     Expo / React Native           → Android + iOS app
 packages/
-  contracts/ tipos TypeScript dos contratos HTTP (compartilhados)
-docs/       documentação (comece por docs/README.md)
+  contracts/  shared TypeScript types for the HTTP contracts
+docs/         architecture, domain, API, ADRs, deploy, CI/CD, roadmap
 ```
 
-## Começando
+| Layer | Technology |
+|---|---|
+| API | Node.js 22, NestJS, Prisma, PostgreSQL, Swagger (`/docs`) |
+| Admin | Next.js |
+| Mobile | Expo, React Native |
+| Shared | TypeScript contracts package |
+| Infra | Docker, Railway, Vercel, GitHub Actions |
 
-Pré-requisitos: Node 22+, pnpm 11 (`npm i -g pnpm`), Docker.
+## Getting started
+
+Requirements: Node 22+, pnpm 11 (`npm i -g pnpm`), Docker.
 
 ```bash
 pnpm install
-pnpm db:up                                   # Postgres local na porta 5433
-cp apps/api/.env.example apps/api/.env       # preencha JWT_SECRET e TMDB_API_TOKEN
+pnpm db:up                                   # local Postgres on port 5433
+cp apps/api/.env.example apps/api/.env       # fill JWT_SECRET and TMDB_API_TOKEN
 pnpm --filter @quero-assistir/api prisma:deploy
-pnpm dev:api                                 # http://localhost:3000  (Swagger em /docs)
+pnpm dev:api                                 # http://localhost:3000 (Swagger at /docs)
 ```
 
-Popular o catálogo (precisa de `TMDB_API_TOKEN`, grátis em themoviedb.org → Configurações → API):
+Populate the catalog (needs a free `TMDB_API_TOKEN` from themoviedb.org → Settings → API):
 
 ```bash
 pnpm --filter @quero-assistir/api build && pnpm --filter @quero-assistir/api sync
 ```
 
-Painel admin e app: veja [docs/08-admin.md](docs/08-admin.md) e [docs/07-mobile.md](docs/07-mobile.md).
+Admin panel and mobile app: see [docs/08-admin.md](docs/08-admin.md) and [docs/07-mobile.md](docs/07-mobile.md).
 
-## Qualidade
+## Quality
 
 ```bash
-pnpm typecheck && pnpm lint && pnpm test     # unitários
-pnpm --filter @quero-assistir/api test:e2e   # e2e com Postgres real (banco *_test)
+pnpm typecheck && pnpm lint && pnpm test     # unit tests
+pnpm --filter @quero-assistir/api test:e2e   # e2e against a real Postgres (*_test database)
 ```
 
-CI no GitHub Actions roda tudo isso + build das imagens Docker a cada PR.
+GitHub Actions runs all of the above plus Docker image builds on every PR.
 
-## Documentação
+## Project status
 
-Índice completo em [docs/README.md](docs/README.md). Para trabalhar com o Claude Code, leia [CLAUDE.md](CLAUDE.md).
+The API, sync job and admin panel are built and tested. The mobile app compiles and type-checks, but gestures and Google Sign-In have **not yet been tested on a physical device**. Known gaps and next steps (insights dashboard, push notifications, simple recommendations) are listed in [docs/12-roadmap.md](docs/12-roadmap.md).
 
-## Créditos
+> Project documentation in `docs/` is written in Brazilian Portuguese.
 
-Dados de filmes e séries: TMDB. *Este produto usa a API do TMDB, mas não é endossado nem certificado por ele.* Disponibilidade em streaming: JustWatch (via TMDB).
+## Credits
 
-## Licença
+Movie and series data: TMDB. *This product uses the TMDB API but is not endorsed or certified by TMDB.* Streaming availability: JustWatch (via TMDB).
 
-MIT — veja [LICENSE](LICENSE).
+## License
+
+MIT, see [LICENSE](LICENSE).
